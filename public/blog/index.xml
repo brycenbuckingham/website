@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blogs on Brycen Buckingham</title>
+    <link>/blog/</link>
+    <description>Recent content in Blogs on Brycen Buckingham</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sat, 14 Dec 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>My Interest in Python</title>
+      <link>/blog/my-interest-in-python/</link>
+      <pubDate>Sat, 14 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/my-interest-in-python/</guid>
+      <description>Hey Y’all,
+Thanks for tuning-in to another blog post! I just wanted to take some time to express my thoughts and interest in working with Python.
+This semester (Fall 2019) is actually the first time that I’ve used or worked with Python. Previously, I’ve used RStudio and R to explore statistical relationships within data sets, but I’m now dipping my toes into something that’s new to me. So far, I’ve really fallen in love with Regular Expression Applications and analyzing DNA sequences with the Needleman-Wunsch and Smith-Walterman Algorithms.</description>
+    </item>
+    
+    <item>
+      <title>Welcome to my Website</title>
+      <link>/blog/welcome-to-my-website/</link>
+      <pubDate>Sat, 14 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/welcome-to-my-website/</guid>
+      <description>Dear Readers/Viewers,
+Welcome to my website! I’m so excited that you’re here and reading this post. I will be using this website to document the happenings in my life, as well as the various projects I’ve worked on. At the moment, I’m just starting off with my coding career, so conent may be limited. But, before I discredit myself, let me tell you a little about who I am!</description>
+    </item>
+    
+  </channel>
+</rss>

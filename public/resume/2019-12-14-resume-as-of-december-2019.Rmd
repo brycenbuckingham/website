@@ -1,0 +1,78 @@
+---
+title: Resume as of December 2019
+author: Brycen Buckingham
+date: '2019-12-14'
+slug: resume-as-of-december-2019
+categories: []
+tags: []
+description: ''
+---
+
+Click [here](/Resume.pdf) to see a pdf version of my resume
+
+## **Brycen Buckingham**  
+brycenbuckingham@gmail.com  
+2400 Nueces St. Unit 1302 ∙ Austin, TX 78712 ∙ (408) 881-2539
+
+___
+
+### **EDUCATION**	 
+_**The University of Texas at Austin**_  
+Bachelor of Science and Arts, Biology  
+Certificate in Business of Healthcare
+May 2020  
+Overall GPA: 3.49
+
+___
+
+### **EXPERIENCE**  
+_**2400 Nueces Apartments**_ - *Marketing Manager*  
+Austin, Texas | March 2018 - Current	
+- Presented our community to potential residents through digital platforms  
+- Planned and executed community events to draw interest to our community  
+- Supervised community assistants to conduct front desk responsibilities  
+- Alleviated tense situations between residents  
+
+_**Gilroy Grill**_ – *Floor and Delivery Manager*  
+Gilroy, CA | January 2014 – August 2016  
+- Prepared and decorated venues for personal events (all 500 people or larger)  
+- Cooked and served meals while managing up to 10 tables of 8 people each  
+- Delivered and served food at off site events up to 40 miles away  
+- Took weekly inventory of the refrigerator and dishes 
+
+___
+
+### **ACADEMIC PROJECTS**   										
+_**Hand Hygiene Improvement Project**_  – *Auditor*  
+Dell Seton Medical Center | Spring 2019  
+- Monitored hand hygiene practices of medical professionals in the surgery wing  
+- Compiled and analyzed all data with RStudio to find trends across multiple variables  
+- Submitted findings and improvement recommendations to the senior infection preventionist
+
+___
+
+### **LEADERSHIP EXPERIENCE AND ACTIVITIES**  								
+_**Immersion Program**_ – *New Orleans 9th Ward Relief*  
+New Orleans | Spring 2015  
+- Travelled to New Orleans, LA to help rebuild homes that were destroyed by Hurricane Katrina  
+- Administered food and clothes to the people of the lower 9th at a local homeless shelter  
+- Worked with the Saint Bernard Project to help with flood relief and to rebuild homes  
+
+_**Saint Joseph’s: The Lord’s Table**_ – *Soup kitchen team member*  
+Gilroy | September 2013 – August 2016  
+- Cooked and prepared buffet style meals for the homeless in Gilroy, CA  
+- Handed out and demonstrated how to use basic first-aid materials  
+
+_**California Scholarship Federation**_ – *Teacher’s Assistant and Peer Tutor*  
+Mountain View | January 2013 – May 2016  
+- Aided teachers by grading papers and projects  
+- Proctored assessment tests for foreign language studies  
+- Tutored fellow peers in Calculus, French, Physics, Biology, and Chemistry  
+
+___
+
+### **ADDITIONAL INFORMATION**										
+Computer Skills: MS Word, Excel, PowerPoint, R and RStudio, Python  
+Languages: Fluent in French 
+Interests: Acoustic Drums, Carpentry and Construction, Travelling, Sailing, Skiing, Physical Training
+Work Eligibility: Eligible to work in the U.S. with no restrictions

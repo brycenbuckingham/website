@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Brycen Buckingham" />
+    <meta name="description" content="An Exposition of My Current and Previous Data Projects">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 1 - US Beers Final</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project1usbeersfinal/">Project 1 - US Beers Final</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p><strong>Dataset Choice</strong></p>
+<p>When searching for datasets to work with, I came across these two sets on kaggle.com. As a beer fan myself, I
+thought that these ones would be fun to work with! They feature beers and breweries from all across the United
+States. The author scrapped and compiled these from a website called CraftCans using python. He included the
+following variables:</p>
+<p>The name of the brewery and it’s location (state and city)</p>
+<p>The name of the beer each brewery makes, along with it’s categorical style</p>
+<p>The alcohol by volume content of each beer</p>
+<p>The bitterness of each beer, represented by the IBU (international bitterness unit)</p>
+<p>The ounces of each beer</p>
+<p>And finally, the unique brewery ID number assigned to the brewery, and to the beer so that we may later tell where
+they came from</p>
+<p>Throughout my analysis, I’m expecting there to be some sort of trend between ABV and IBU. Higher alcohol
+content beers tend to be IPAs or a little more bitter, so I guess this project will help me prove that!</p>
+<p>I was lucky enough to find that he had already made them tidy, so I didn’t have to wrangle the data much. Here are
+links to where I found the data and to a blog the author wrote about the data:</p>
+<p><a href="https://www.kaggle.com/nickhould/craft-cans#beers.csv" class="uri">https://www.kaggle.com/nickhould/craft-cans#beers.csv</a></p>
+<p><a href="http://www.jeannicholashould.com/python-web-scraping-tutorial-for-craft-beers.html" class="uri">http://www.jeannicholashould.com/python-web-scraping-tutorial-for-craft-beers.html</a></p>
+<p><strong>Joining the Data Sets</strong></p>
+<pre class="r"><code>#data joining
+beers &lt;- read.csv(&quot;C:/Users/bryce/beers.csv&quot;)
+breweries &lt;- read.csv(&quot;C:/Users/bryce/breweries.csv&quot;)
+
+beers1 &lt;- beers %&gt;% select(everything(), -X)
+beerdata &lt;- full_join(beers1,breweries, by=c(&quot;brewery_id&quot;=&quot;X&quot;))
+head(beerdata)</code></pre>
+<pre><code>##     abv ibu   id              name.x                          style
+## 1 0.050  NA 1436            Pub Beer            American Pale Lager
+## 2 0.066  NA 2265         Devil&#39;s Cup        American Pale Ale (APA)
+## 3 0.071  NA 2264 Rise of the Phoenix                   American IPA
+## 4 0.090  NA 2263            Sinister American Double / Imperial IPA
+## 5 0.075  NA 2262       Sex and Candy                   American IPA
+## 6 0.077  NA 2261        Black Exodus                  Oatmeal Stout
+##   brewery_id ounces                    name.y city state
+## 1        408     12 10 Barrel Brewing Company Bend    OR
+## 2        177     12       18th Street Brewery Gary    IN
+## 3        177     12       18th Street Brewery Gary    IN
+## 4        177     12       18th Street Brewery Gary    IN
+## 5        177     12       18th Street Brewery Gary    IN
+## 6        177     12       18th Street Brewery Gary    IN</code></pre>
+<pre class="r"><code>beerdata1 &lt;- beerdata %&gt;% rename(beer=&#39;name.x&#39;, brewery=&#39;name.y&#39;) %&gt;% select(everything(), -id, -brewery_id) %&gt;% select(brewery, beer, style, ounces, abv, ibu, state, city)
+head(beerdata1)</code></pre>
+<pre><code>##                     brewery                beer
+## 1 10 Barrel Brewing Company            Pub Beer
+## 2       18th Street Brewery         Devil&#39;s Cup
+## 3       18th Street Brewery Rise of the Phoenix
+## 4       18th Street Brewery            Sinister
+## 5       18th Street Brewery       Sex and Candy
+## 6       18th Street Brewery        Black Exodus
+##                            style ounces   abv ibu state city
+## 1            American Pale Lager     12 0.050  NA    OR Bend
+## 2        American Pale Ale (APA)     12 0.066  NA    IN Gary
+## 3                   American IPA     12 0.071  NA    IN Gary
+## 4 American Double / Imperial IPA     12 0.090  NA    IN Gary
+## 5                   American IPA     12 0.075  NA    IN Gary
+## 6                  Oatmeal Stout     12 0.077  NA    IN Gary</code></pre>
+<div id="explanation-on-data-joining" class="section level4">
+<h4>Explanation on Data Joining</h4>
+<p>Before joining the datasets, I dropped the “X” column from the beers data for two reasons. First, it was merely a
+placeholder/counter for the observation of each beer, so it seemed redundant. Second, the breweries data also
+had an “X” column in its midst, but its values corresponded to the unique identifier for each brewery. I did not want</p>
+<p>the datasets to erroneously join based on this column, so I thought it was best to remove it.
+When I finally joined the two data sets, I used a full join and set the common identifiers as “brewery_id” from the
+beers data, and “X” from the breweries data. These corresponded to the unique number assigned to each brewery.
+As you can imagine, there were many duplicates of the unique numbers in the beer data, but the maximum
+number the column reached was 557, which is exactly the number of breweries there were in the breweries data.
+In other words, this resulted in a perfect join with no information lost.</p>
+<p>After this, I renamed the “name” variables to correspond to the name of the beer and the name of the brewery,
+while also removing the id variables that were no longer needed. Then I rearranged the data in a way where the
+important categorical variables came first, followed by the important numerical data, and finally, the location of the
+breweries.</p>
+<p><strong>Data Examination</strong></p>
+<pre class="r"><code>#data transformation and summary stats
+
+beerdata1 &lt;- beerdata1 %&gt;% mutate(alc.vol.oz = abv*ounces) %&gt;% mutate(alc.cat = case_when(abv &gt;=0.065 ~ &quot;high&quot;, abv&lt;0.065 &amp; abv&gt;=0.05 ~ &quot;medium&quot;, abv&lt;0.05 ~ &quot;low&quot;))
+texasbeers &lt;- beerdata1 %&gt;% filter(state == &quot; TX&quot;) %&gt;% select(-state)
+abv.state &lt;- beerdata1 %&gt;% group_by(state) %&gt;% summarize(mean(abv, na.rm = T)) %&gt;% rename(mean.abv=&quot;mean(abv, na.rm = T)&quot;) %&gt;% arrange(desc(mean.abv))
+
+
+#general summaries
+beerdata1 %&gt;% summarize(mean(abv, na.rm = T), n_distinct(style), n_distinct(city))</code></pre>
+<pre><code>##   mean(abv, na.rm = T) n_distinct(style) n_distinct(city)
+## 1           0.05977342               100              384</code></pre>
+<pre class="r"><code>head(abv.state)</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##   state mean.abv
+##   &lt;fct&gt;    &lt;dbl&gt;
+## 1 &quot; NV&quot;   0.0669
+## 2 &quot; DC&quot;   0.0656
+## 3 &quot; KY&quot;   0.0646
+## 4 &quot; IN&quot;   0.0634
+## 5 &quot; MI&quot;   0.0634
+## 6 &quot; CO&quot;   0.0634</code></pre>
+<pre class="r"><code>#ounces summary
+beerdata1 %&gt;% summarise(mean(ounces, na.rm = T), median(ounces, na.rm = T), sd(ounces, na.rm = T), var(ounces, na.rm = T), min(ounces, na.rm = T), max(ounces, na.rm = T), n_distinct(ounces, na.rm = T))</code></pre>
+<pre><code>##   mean(ounces, na.rm = T) median(ounces, na.rm = T) sd(ounces, na.rm = T)
+## 1                13.59224                        12              2.352204
+##   var(ounces, na.rm = T) min(ounces, na.rm = T) max(ounces, na.rm = T)
+## 1               5.532862                    8.4                     32
+##   n_distinct(ounces, na.rm = T)
+## 1                             7</code></pre>
+<pre class="r"><code>#abv summary
+beerdata1 %&gt;% summarise(mean(abv, na.rm = T), median(abv, na.rm = T), sd(abv, na.rm = T), var(abv, na.rm = T), min(abv, na.rm = T), max(abv, na.rm = T), n_distinct(abv, na.rm = T))</code></pre>
+<pre><code>##   mean(abv, na.rm = T) median(abv, na.rm = T) sd(abv, na.rm = T)
+## 1           0.05977342                  0.056         0.01354173
+##   var(abv, na.rm = T) min(abv, na.rm = T) max(abv, na.rm = T)
+## 1        0.0001833786               0.001               0.128
+##   n_distinct(abv, na.rm = T)
+## 1                         74</code></pre>
+<pre class="r"><code>#ibu summary
+beerdata1 %&gt;% summarise(mean(ibu, na.rm = T), median(ibu, na.rm = T), sd(ibu, na.rm = T), var(ibu, na.rm = T), min(ibu, na.rm = T), max(ibu, na.rm = T), n_distinct(ibu, na.rm = T))</code></pre>
+<pre><code>##   mean(ibu, na.rm = T) median(ibu, na.rm = T) sd(ibu, na.rm = T)
+## 1             42.71317                     35           25.95407
+##   var(ibu, na.rm = T) min(ibu, na.rm = T) max(ibu, na.rm = T)
+## 1            673.6135                   4                 138
+##   n_distinct(ibu, na.rm = T)
+## 1                        107</code></pre>
+<pre class="r"><code>#summaries after grouping by categorical variables
+beerdata1 %&gt;% group_by(state,city) %&gt;% summarise(n_distinct(brewery), mean(abv, na.rm=T))</code></pre>
+<pre><code>## # A tibble: 401 x 4
+## # Groups:   state [51]
+##    state city       `n_distinct(brewery)` `mean(abv, na.rm = T)`
+##    &lt;fct&gt; &lt;fct&gt;                      &lt;int&gt;                  &lt;dbl&gt;
+##  1 &quot; AK&quot; Anchorage                      4                 0.0542
+##  2 &quot; AK&quot; Juneau                         1                 0.053 
+##  3 &quot; AK&quot; Soldotna                       1                 0.0585
+##  4 &quot; AK&quot; Talkeetna                      1                 0.0595
+##  5 &quot; AL&quot; Birmingham                     1                 0.0654
+##  6 &quot; AL&quot; Gadsden                        1                 0.06  
+##  7 &quot; AL&quot; Huntsville                     1                 0.0577
+##  8 &quot; AR&quot; Rogers                         1                 0.04  
+##  9 &quot; AR&quot; Springdale                     1                 0.055 
+## 10 &quot; AZ&quot; Chandler                       1                 0.0632
+## # ... with 391 more rows</code></pre>
+<pre class="r"><code>beerdata1 %&gt;% group_by(state, style) %&gt;% summarise(mean(abv, na.rm = T)) %&gt;% filter(style==&quot;American IPA&quot; | style==&quot;Cider&quot;)</code></pre>
+<pre><code>## # A tibble: 56 x 3
+## # Groups:   state [48]
+##    state style        `mean(abv, na.rm = T)`
+##    &lt;fct&gt; &lt;fct&gt;                         &lt;dbl&gt;
+##  1 &quot; AK&quot; American IPA                 0.0624
+##  2 &quot; AL&quot; American IPA                 0.066 
+##  3 &quot; AZ&quot; American IPA                 0.0659
+##  4 &quot; CA&quot; American IPA                 0.0671
+##  5 &quot; CO&quot; American IPA                 0.0661
+##  6 &quot; CT&quot; American IPA                 0.066 
+##  7 &quot; DC&quot; American IPA                 0.065 
+##  8 &quot; DE&quot; American IPA               NaN     
+##  9 &quot; FL&quot; American IPA                 0.0685
+## 10 &quot; GA&quot; American IPA                 0.0637
+## # ... with 46 more rows</code></pre>
+<pre class="r"><code>texasbeers %&gt;% group_by(city) %&gt;% summarise(mean(abv, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 16 x 2
+##    city             `mean(abv, na.rm = T)`
+##    &lt;fct&gt;                             &lt;dbl&gt;
+##  1 Alpine                           0.061 
+##  2 Austin                           0.0574
+##  3 Blanco                           0.0579
+##  4 College Station                  0.0547
+##  5 Conroe                           0.071 
+##  6 Dallas                           0.0626
+##  7 Denton                           0.0715
+##  8 Dripping Springs                 0.06  
+##  9 Farmers Branch                   0.049 
+## 10 Fort Worth                       0.0594
+## 11 Fredericksburg                   0.045 
+## 12 Houston                          0.0619
+## 13 Richmond                         0.0612
+## 14 San Antonio                      0.0515
+## 15 Seven Points                     0.061 
+## 16 South Austin                     0.0638</code></pre>
+</div>
+<div id="general-data-summary" class="section level4">
+<h4>General Data Summary</h4>
+<p>From the general summaries and statistics, we can see that there are 100 distinct styles of beers included in this
+dataset, spread across 384 distinct cities! The average alcohol content in a beer brewed in the US is 5.9%
+according to the data frame. That seems a little high, but we do have to consider that a lot of this data is pulled
+from microbreweries which tend to have higher alcohol outputs. The beers brewed in Texas seem to be right at the
+average with alcohol content, coming in at 5.9% as well! Now, if we look at the variables individually, we can see
+that the median beer size is 12 ounces, with a standard deviation of 2. That’s a pretty small spead, so we can
+assume that most beers brewed in the US sit around 12 ounces. The max beer size on this list, however, is 32
+ounces! Now that’s a hefty beer!</p>
+<p>Like I mentioned earlier, the average alcohol content for beers in the US is 5.9%. This variable has a standard
+deviation of 1.3%, and a maximum of 12.8%. So again, most beers on this list are around 5.9% abv, but there is
+some wiggle room around that number. Finally, the average bitterness of a beer brewed in the US has an IBU
+value of 42. This is somewhat vague, especially considering that the IBu scale runs from zero to infinity, but most
+beers will fall in the range of 5-100 IBUs, with IPAs being at the higher end of that scale. So an average rank of 42
+means that beers tend to have a little sourness to them, but not in an overwhelming manner.</p>
+<p><strong>Correlationional Examination</strong></p>
+<pre class="r"><code>#Correlation Matrix
+corrbeerdata &lt;- beerdata1[!is.na(beerdata1$abv),]
+corrbeerdata &lt;- corrbeerdata[!is.na(corrbeerdata$ibu),]
+corrbeerdata &lt;- corrbeerdata[!is.na(corrbeerdata$ounces),]
+corrbeerdata &lt;- corrbeerdata[!is.na(corrbeerdata$state),]
+corrbeerdata %&gt;% select(abv, ibu, ounces) %&gt;% cor() %&gt;% round(2)</code></pre>
+<pre><code>##         abv  ibu ounces
+## abv    1.00 0.67   0.11
+## ibu    0.67 1.00   0.05
+## ounces 0.11 0.05   1.00</code></pre>
+</div>
+<div id="correlation-summary" class="section level4">
+<h4>Correlation Summary</h4>
+<p>The correlation matrix reveals that there is a slight correlation between alcohol content and bitterness of the beer.
+The correlation is 0.67, so we could say that as the beer has more alcohol in it, it’s likely to be more sour, but by no
+means is that causality.</p>
+<p><strong>Visualizations</strong></p>
+<pre class="r"><code>#visualizations
+
+beerdata1 %&gt;% ggplot(aes(x = state, fill=alc.cat)) + geom_bar() + coord_flip() + theme(axis.text.y = element_text(size=6)) + ggtitle(&quot;Number of Unique Beers Produced in Each State&quot;) + ylab(&quot;Number of Beers&quot;) + xlab(&quot;State&quot;) + labs(fill = &quot;Alcohol Content Category&quot;)</code></pre>
+<p><img src="/Project1USBeersFINAL_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>beerdata1 %&gt;% ggplot(aes(x = abv, y = ibu, color = ounces)) + geom_point(size=0.75) + geom_smooth(method = &quot;lm&quot;, color = &#39;red&#39;) + ggtitle(&quot;Relation Between Alcohol Percentage and Bitterness&quot;) + ylab(&#39;International Bitterness Unit&#39;) + xlab(&#39;Alcohol By Volume (Perecent&#39;) + theme(axis.text.y = element_text(size=3)) + scale_color_gradient(low = &#39;blue&#39;, high=&#39;yellow&#39;)</code></pre>
+<pre><code>## Warning: Removed 1005 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 1005 rows containing missing values (geom_point).</code></pre>
+<p><img src="/Project1USBeersFINAL_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+</div>
+<div id="number-of-unique-beers-produced-in-each-state" class="section level4">
+<h4>Number of Unique Beers Produced in Each State</h4>
+<p>The first plot shows a couple different things. First, it shows that plenty of beers are produced across the nation, in
+that all fifty states are represented here. Second, this plot shows how many unique beers are produced by the
+breweries in those states. Colorado and California produce the highest number of unique beers by far, with North
+Dakota an West Virginia producing the least! Finally, this plot also shows what kind of beers a state produces in
+terms of alcohol content. For beers with more than 6.5%, they are labeled as “high alcohol content”, for beers
+between 6.5% and 5% they are labeled as “medium” content, and for beers below 5% they are labeled as “low”
+content. Most states produce beers with medium alcohol content, but it seems like the more unique beers a state
+produces, more of those contain high alcohol (again, take Colorado and California for example).</p>
+</div>
+<div id="relation-between-alcohol-percentage-and-bitterness" class="section level4">
+<h4>Relation Between Alcohol Percentage and Bitterness</h4>
+<p>The second plot shows the relationship between alcohol content of a beer and its bitterness. As I discussed earlier, there
+is a correlation of 0.67 between the two in this data set. I have also mapped on the size of each beer by using
+color, but it does not seem like there is an apparent relationship between size and the other variables.</p>
+<p><strong>Cluster Analysis</strong></p>
+<pre class="r"><code>#Cluster Analysis
+
+#ABV v. IBU
+clust_dat &lt;- corrbeerdata %&gt;% select(abv,ibu)
+
+wss&lt;-vector()
+for(i in 1:10){
+temp&lt;-clust_dat%&gt;%dplyr::select(abv,ibu)%&gt;%kmeans(.,i)
+wss[i]&lt;-temp$tot.withinss
+}
+ggplot()+geom_point(aes(x=1:10,y=wss))+geom_path(aes(x=1:10,y=wss))+
+ xlab(&quot;clusters&quot;)+scale_x_continuous(breaks=1:10)</code></pre>
+<p><img src="/Project1USBeersFINAL_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>kmeans1&lt;-clust_dat%&gt;%kmeans(3)
+kmeans1</code></pre>
+<pre><code>## K-means clustering with 3 clusters of sizes 410, 560, 435
+## 
+## Cluster means:
+##          abv      ibu
+## 1 0.07274634 77.26829
+## 2 0.05226429 19.02500
+## 3 0.05766667 40.63908
+## 
+## Clustering vector:
+##   15   22   23   25   26   27   28   29   30   31   32   33   34   35   36 
+##    1    1    3    3    2    2    2    1    1    1    3    1    3    3    1 
+##   37   38   39   40   43   44   50   52   54   55   56   57   58   59   60 
+##    3    1    2    1    2    2    2    3    1    3    2    2    1    3    3 
+##   61   63   64   65   66   67   68   69   70   71   72   73   74   75   76 
+##    1    2    2    3    2    2    1    2    1    1    2    3    2    2    2 
+##   77   78   79   81   82   83   84   85   86   87   88   89   90   96  106 
+##    2    1    3    1    2    3    3    3    2    3    1    3    2    3    2 
+##  107  108  109  110  111  112  113  114  115  116  117  118  119  129  130 
+##    2    1    2    2    2    2    2    2    2    1    2    2    2    1    2 
+##  131  132  133  135  136  137  138  139  140  141  145  146  147  148  149 
+##    2    3    2    3    2    2    3    2    2    1    2    1    3    1    3 
+##  150  151  152  154  155  156  164  165  166  167  168  169  170  172  173 
+##    3    1    2    2    1    2    3    2    1    2    2    2    2    2    3 
+##  180  181  182  184  185  186  188  190  191  192  193  195  196  197  198 
+##    3    1    3    3    2    1    1    2    3    3    1    2    1    1    2 
+##  199  200  201  202  203  205  210  211  212  213  214  215  216  217  224 
+##    3    3    1    2    3    3    3    2    1    1    2    3    1    2    3 
+##  226  228  229  230  231  232  233  234  240  241  243  247  250  251  252 
+##    2    1    3    1    3    3    3    2    2    1    1    3    1    3    3 
+##  253  254  255  256  257  258  259  260  262  263  264  265  266  267  268 
+##    1    3    3    2    1    2    3    1    3    3    2    1    3    3    1 
+##  269  270  271  272  276  277  278  279  280  281  282  283  284  285  286 
+##    1    3    3    3    1    2    3    2    3    1    3    3    3    2    2 
+##  288  289  292  304  305  306  307  310  311  312  313  314  315  321  322 
+##    3    3    3    3    3    3    3    1    1    3    2    1    2    3    2 
+##  323  332  333  335  336  337  338  339  340  345  347  354  355  356  357 
+##    2    3    3    2    1    2    3    2    1    3    3    1    2    2    3 
+##  360  361  362  363  364  365  366  367  368  372  373  374  375  377  379 
+##    3    3    2    2    3    3    3    3    1    3    3    1    2    3    2 
+##  380  381  382  384  385  386  454  455  457  458  460  466  468  469  470 
+##    2    1    2    1    2    2    2    2    1    3    3    1    3    3    3 
+##  473  474  475  479  480  483  484  486  487  488  500  501  502  503  504 
+##    3    2    1    3    1    2    1    3    2    3    2    3    1    3    2 
+##  505  507  508  509  510  511  512  513  514  515  516  517  518  525  526 
+##    1    3    2    2    1    1    3    3    3    3    3    2    1    3    1 
+##  527  528  529  530  531  532  533  534  535  536  537  546  549  550  551 
+##    1    3    3    3    2    1    2    2    3    2    1    2    1    2    1 
+##  552  562  563  566  568  569  570  571  574  575  576  577  578  579  580 
+##    3    2    2    1    1    3    3    2    3    2    3    3    2    1    1 
+##  581  583  584  585  587  588  590  591  592  593  595  596  599  600  601 
+##    1    3    2    1    2    3    1    3    3    2    1    2    2    1    1 
+##  606  607  609  610  611  614  615  616  618  619  621  622  623  631  632 
+##    1    1    1    1    1    1    1    1    2    2    1    1    2    1    1 
+##  633  634  635  636  637  638  639  641  642  643  651  652  653  654  658 
+##    2    2    3    2    1    2    2    1    2    2    2    1    3    2    2 
+##  660  661  663  673  674  682  683  685  686  695  697  698  701  703  704 
+##    2    1    2    3    2    2    2    1    1    3    3    1    2    2    1 
+##  705  706  707  708  709  710  713  714  715  716  717  719  720  721  722 
+##    3    2    3    3    1    3    3    2    2    1    2    1    2    3    2 
+##  723  725  726  728  738  739  740  741  742  743  745  750  752  759  760 
+##    2    1    2    1    1    2    2    3    1    2    1    1    2    1    1 
+##  761  762  766  772  773  774  775  776  777  778  779  780  781  782  785 
+##    2    1    3    3    2    1    3    1    3    2    2    2    1    3    3 
+##  790  791  793  794  796  798  800  805  806  809  811  812  815  816  818 
+##    1    3    3    2    1    2    1    3    1    2    2    1    1    2    1 
+##  823  824  836  838  839  840  841  842  843  844  845  846  847  851  853 
+##    2    1    1    2    2    2    3    3    1    3    1    3    2    1    2 
+##  854  856  857  858  861  862  863  865  866  867  868  870  872  873  874 
+##    2    2    3    2    2    3    1    1    2    2    3    2    2    1    2 
+##  878  879  880  881  882  883  884  885  887  888  889  890  891  892  893 
+##    3    3    3    1    3    2    3    1    3    2    2    1    1    3    1 
+##  894  895  896  897  898  899  901  902  903  904  905  906  907  908  909 
+##    1    1    1    2    1    1    2    1    1    1    2    2    1    2    3 
+##  910  911  912  913  914  915  916  917  918  919  920  921  926  927  928 
+##    1    3    1    3    3    3    3    3    2    2    2    2    2    2    3 
+##  929  930  931  932  933  934  935  936  937  938  939  940  941  942  943 
+##    2    2    3    1    2    2    3    2    3    2    2    2    2    1    1 
+##  944  945  946  947  948  955  958  959  960  962  963  966  967  969  970 
+##    3    2    2    1    2    1    2    2    3    2    2    2    3    2    3 
+##  971  972  973  974  975  976  977  978  979  980  981  982  984  986  987 
+##    3    1    2    1    2    2    3    3    3    3    3    1    1    3    2 
+##  989  990  991  992  994  995  996  998  999 1001 1002 1012 1013 1014 1015 
+##    3    3    2    2    2    3    2    3    3    3    1    3    2    2    2 
+## 1016 1017 1018 1019 1020 1022 1023 1024 1025 1026 1027 1028 1029 1030 1038 
+##    1    2    3    2    3    2    3    2    3    3    2    2    2    3    1 
+## 1039 1040 1041 1042 1044 1045 1046 1047 1048 1049 1052 1053 1054 1055 1056 
+##    3    1    3    3    3    1    1    2    1    2    3    3    2    1    3 
+## 1058 1059 1060 1061 1062 1063 1064 1065 1066 1067 1068 1071 1072 1075 1076 
+##    2    2    3    2    1    1    2    2    1    1    2    3    3    2    2 
+## 1077 1078 1079 1080 1081 1082 1083 1084 1085 1086 1087 1088 1089 1090 1091 
+##    2    2    2    2    2    2    2    2    2    2    2    1    3    1    1 
+## 1092 1093 1094 1095 1096 1098 1102 1103 1104 1105 1106 1107 1108 1109 1110 
+##    1    1    1    3    1    2    1    2    2    2    1    3    3    3    2 
+## 1111 1112 1113 1114 1115 1116 1119 1120 1121 1122 1123 1126 1139 1140 1141 
+##    3    1    2    2    3    2    2    2    1    1    3    3    2    3    1 
+## 1142 1144 1145 1146 1147 1148 1149 1150 1151 1152 1153 1154 1155 1156 1157 
+##    2    2    2    2    3    2    2    2    1    3    2    1    2    1    2 
+## 1159 1162 1163 1164 1165 1166 1167 1177 1178 1180 1181 1182 1183 1184 1185 
+##    2    2    1    1    3    1    2    1    2    1    2    2    2    2    2 
+## 1186 1188 1189 1190 1191 1196 1197 1198 1199 1200 1207 1208 1209 1210 1211 
+##    2    2    1    3    2    2    2    1    1    1    3    3    3    3    2 
+## 1212 1213 1216 1217 1218 1219 1220 1221 1222 1223 1224 1225 1228 1229 1230 
+##    1    3    3    2    3    3    3    3    2    3    2    2    1    3    2 
+## 1234 1235 1237 1241 1245 1247 1248 1249 1250 1251 1252 1253 1254 1255 1262 
+##    2    3    2    3    2    2    2    3    1    3    3    2    2    2    2 
+## 1265 1266 1267 1268 1269 1270 1271 1272 1273 1281 1282 1283 1289 1291 1297 
+##    2    3    2    1    1    1    2    3    3    2    3    3    1    1    2 
+## 1302 1307 1308 1309 1310 1311 1312 1313 1314 1315 1316 1320 1321 1322 1323 
+##    2    2    2    1    2    2    3    1    3    2    3    1    1    2    2 
+## 1324 1325 1326 1327 1328 1329 1331 1332 1333 1334 1335 1336 1337 1338 1339 
+##    2    3    2    3    1    2    1    1    2    2    1    1    1    2    1 
+## 1340 1341 1347 1355 1356 1357 1358 1360 1361 1376 1377 1378 1386 1387 1388 
+##    3    2    2    1    2    3    2    2    2    1    3    1    1    1    3 
+## 1389 1390 1391 1392 1393 1398 1399 1400 1401 1402 1403 1404 1405 1408 1409 
+##    1    3    3    3    1    2    3    2    2    2    2    3    2    2    1 
+## 1419 1420 1421 1422 1423 1424 1425 1426 1427 1428 1429 1430 1433 1434 1437 
+##    2    2    2    3    3    3    2    2    2    2    3    2    1    1    2 
+## 1438 1439 1440 1441 1444 1445 1446 1447 1452 1453 1454 1455 1456 1457 1458 
+##    1    2    2    2    3    1    2    2    2    2    2    2    1    2    1 
+## 1460 1461 1466 1468 1478 1479 1480 1483 1488 1489 1494 1495 1496 1497 1498 
+##    2    2    1    1    2    3    3    3    3    1    3    2    2    3    2 
+## 1499 1502 1508 1509 1510 1511 1512 1513 1514 1515 1516 1517 1522 1523 1524 
+##    3    3    1    2    1    2    2    1    2    2    3    3    1    2    3 
+## 1529 1530 1531 1532 1533 1534 1536 1539 1552 1560 1561 1562 1565 1567 1568 
+##    2    2    2    3    2    2    1    2    3    1    1    3    1    1    1 
+## 1569 1570 1571 1572 1575 1577 1578 1579 1580 1581 1582 1583 1584 1585 1586 
+##    1    1    1    1    1    1    1    1    3    1    3    1    1    1    1 
+## 1587 1588 1589 1590 1591 1592 1593 1594 1595 1597 1598 1599 1600 1601 1602 
+##    1    3    3    3    1    1    1    1    1    1    1    1    1    3    1 
+## 1603 1604 1605 1606 1609 1610 1611 1612 1613 1614 1615 1617 1618 1621 1622 
+##    1    3    3    3    2    3    2    2    2    3    1    3    2    1    2 
+## 1623 1624 1625 1628 1629 1631 1632 1633 1641 1642 1643 1644 1645 1648 1651 
+##    2    1    1    2    2    1    3    3    2    2    2    1    1    1    2 
+## 1653 1654 1655 1656 1657 1658 1660 1661 1666 1670 1671 1672 1673 1674 1675 
+##    2    2    2    2    2    1    3    3    3    2    2    2    2    1    2 
+## 1676 1677 1678 1679 1680 1682 1683 1684 1685 1686 1688 1689 1690 1691 1692 
+##    2    2    2    3    3    1    2    2    1    2    3    3    2    3    3 
+## 1694 1695 1697 1698 1700 1701 1702 1706 1707 1708 1709 1710 1711 1712 1721 
+##    2    3    2    2    3    3    2    2    3    1    1    1    2    1    3 
+## 1723 1724 1725 1726 1727 1728 1729 1730 1731 1732 1733 1734 1735 1736 1742 
+##    2    3    2    2    1    2    3    3    1    3    2    3    1    2    3 
+## 1743 1744 1768 1769 1771 1774 1777 1778 1779 1780 1781 1782 1783 1784 1785 
+##    1    1    1    1    3    3    2    3    3    3    3    3    2    1    3 
+## 1786 1787 1788 1789 1791 1794 1795 1796 1797 1798 1800 1801 1802 1803 1804 
+##    2    2    2    1    2    2    2    1    2    3    2    3    1    2    3 
+## 1805 1806 1807 1808 1811 1812 1818 1822 1824 1825 1826 1827 1829 1832 1833 
+##    2    2    1    1    3    1    2    3    3    3    2    2    1    1    3 
+## 1834 1835 1836 1837 1838 1841 1846 1849 1850 1851 1852 1853 1858 1859 1861 
+##    3    2    3    3    1    1    1    3    2    2    1    3    3    2    2 
+## 1862 1863 1864 1865 1866 1867 1868 1869 1870 1871 1872 1873 1874 1875 1876 
+##    1    3    1    1    1    3    3    3    1    1    3    2    3    1    1 
+## 1877 1878 1879 1880 1881 1884 1885 1889 1892 1893 1894 1895 1899 1900 1901 
+##    3    3    3    3    1    1    2    2    3    1    3    1    1    2    2 
+## 1903 1904 1905 1906 1907 1908 1909 1910 1911 1912 1913 1914 1916 1917 1918 
+##    2    2    1    2    1    2    2    3    3    1    3    3    3    3    2 
+## 1919 1920 1921 1924 1925 1932 1934 1935 1937 1938 1939 1940 1942 1944 1945 
+##    2    3    1    1    1    1    3    2    1    1    2    3    2    3    1 
+## 1946 1947 1948 1949 1950 1951 1952 1953 1954 1955 1957 1958 1959 1960 1961 
+##    1    1    3    1    2    1    3    2    1    3    2    1    1    1    3 
+## 1962 1963 1965 1966 1967 1968 1969 1983 1984 1987 1988 1989 1990 1991 1992 
+##    2    1    2    3    3    2    3    2    2    2    3    2    3    1    2 
+## 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2005 2006 2007 2008 
+##    2    1    2    2    3    2    2    1    2    2    2    2    2    2    2 
+## 2010 2011 2012 2013 2014 2015 2016 2017 2022 2023 2024 2026 2027 2028 2029 
+##    2    2    3    2    3    2    2    3    2    3    1    2    2    2    3 
+## 2030 2031 2032 2033 2035 2036 2037 2038 2039 2040 2041 2042 2043 2044 2046 
+##    3    3    1    2    2    2    2    3    3    2    1    1    1    1    3 
+## 2047 2048 2049 2050 2051 2054 2055 2056 2058 2059 2060 2061 2063 2064 2065 
+##    3    1    3    1    2    2    2    1    2    2    2    2    1    3    1 
+## 2066 2067 2068 2069 2070 2075 2076 2077 2078 2079 2080 2081 2082 2083 2084 
+##    2    1    2    2    3    1    1    1    3    3    3    3    1    2    3 
+## 2085 2086 2087 2088 2089 2090 2092 2096 2098 2099 2100 2101 2102 2103 2104 
+##    1    3    2    3    3    2    3    1    3    3    2    2    2    2    3 
+## 2105 2106 2107 2108 2109 2110 2111 2112 2113 2116 2117 2118 2119 2120 2121 
+##    2    3    2    2    1    2    1    2    2    2    2    1    2    2    1 
+## 2125 2126 2129 2136 2137 2138 2139 2140 2145 2146 2147 2148 2149 2150 2154 
+##    1    3    2    3    3    2    2    1    1    1    2    1    2    2    2 
+## 2155 2156 2157 2160 2161 2162 2170 2174 2175 2176 2177 2178 2179 2180 2181 
+##    3    3    3    3    1    3    2    2    2    3    1    2    3    1    3 
+## 2182 2183 2188 2189 2190 2192 2193 2194 2195 2196 2198 2199 2200 2201 2202 
+##    3    2    2    2    1    1    3    2    3    3    1    3    2    2    3 
+## 2203 2204 2205 2208 2210 2215 2216 2217 2218 2219 2220 2221 2222 2223 2224 
+##    2    1    3    1    3    1    3    2    1    3    1    2    1    2    3 
+## 2225 2226 2227 2229 2230 2231 2232 2233 2234 2236 2237 2238 2239 2240 2241 
+##    3    2    1    1    3    2    2    1    3    1    3    3    2    3    2 
+## 2244 2252 2253 2254 2255 2256 2257 2258 2259 2260 2262 2263 2272 2273 2276 
+##    1    2    2    3    1    2    3    1    3    2    1    2    1    2    3 
+## 2277 2281 2282 2285 2286 2287 2290 2292 2293 2297 2298 2300 2305 2313 2314 
+##    2    2    3    3    3    1    3    2    2    2    1    1    1    2    2 
+## 2315 2316 2317 2318 2319 2320 2321 2323 2325 2326 2327 2328 2329 2331 2332 
+##    3    2    1    1    3    3    3    1    2    3    2    2    3    1    2 
+## 2340 2341 2342 2343 2345 2349 2351 2358 2359 2360 2361 2364 2365 2366 2367 
+##    2    2    1    2    3    1    2    3    3    3    1    2    1    1    2 
+## 2368 2370 2371 2372 2373 2374 2380 2381 2383 2385 2387 2388 2389 2391 2392 
+##    2    3    2    2    2    3    1    3    1    3    1    2    1    1    2 
+## 2394 2395 2396 2397 2398 2399 2400 2401 2406 2409 
+##    1    2    1    1    2    3    1    3    3    3 
+## 
+## Within cluster sum of squares by cluster:
+## [1] 94372.55 18655.70 27058.39
+##  (between_SS / total_SS =  85.2 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;    
+## [5] &quot;tot.withinss&quot; &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;        
+## [9] &quot;ifault&quot;</code></pre>
+<pre class="r"><code>kmeansclust&lt;-clust_dat%&gt;%mutate(cluster=as.factor(kmeans1$cluster))
+kmeansclust%&gt;%ggplot(aes(abv,ibu,color=cluster))+geom_point()</code></pre>
+<p><img src="/Project1USBeersFINAL_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+</div>
+<div id="cluster-analysis-summary" class="section level4">
+<h4>Cluster Analysis Summary</h4>
+<p>I ran a cluster analysis between ABV and IBU to further explore the relationship between the two. I wanted to see
+if the style of the beer was related to that relationship, or if there possibly was something related to the state it was
+produced in.</p>
+<p>First, I created a new data frame called “clust_dat” where I selected the variables I needed from a previous data
+frame called “corrbeerdata”. This previous data frame was used to create a correlation matrix between my numeric
+variables and already had observations with “NA” removed from it. I then created a for loop to evaluate how many
+clusters I should include. From the resulting ggplot, I determined that 3 clusters would be the best to use because
+that estimation had a relatively low “within sum of squares” value, and it was also still significantly different from
+the WSS value for 4 clusters (i.e. the plot was not already flat at that value).</p>
+<p>Then, I ran my data through a kmeans using three clusters, and created a plot to visualize it. From looking at the
+plot, I’m not sure if there really are any clusters to apply to the plot. The segmentation between the cluster groups
+is a hard line, and it doesn’t seem like there are any natural clusters that could form from the data. In that sense,
+I’m not sure if it would be appropriate to try to analyze why the clusters formed where they did, other than it
+segmented the data into thirds based off IBU.</p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

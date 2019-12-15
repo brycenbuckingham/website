@@ -1,0 +1,117 @@
+---
+title: My Interest in Python
+author: Brycen Buckingham
+date: '2019-12-14'
+slug: my-interest-in-python
+categories: []
+tags: []
+description: ''
+---
+Hey Y'all,
+
+Thanks for tuning-in to another blog post! I just wanted to take some time to express my thoughts and interest in working with Python.
+
+This semester (Fall 2019) is actually the first time that I've used or worked with Python. Previously, I've used RStudio and R to explore statistical relationships within data sets, but I'm now dipping my toes into something that's new to me. So far, I've really fallen in love with Regular Expression Applications and analyzing DNA sequences with the Needleman-Wunsch and Smith-Walterman Algorithms.  
+
+___  
+
+### RegEx  
+
+![](/blog/2019-12-14-my-interest-in-python_files/regex.png)
+
+Regular Expressions are simple yet elegant. In a string or a list, if you need to find sections of text that may be similar but also unique, RegEx commands can help you with that! It's almost like drafting the solution to a puzzle, or telling the code to find a red and white stripped sweater in a Where's Waldo book.For example, take a look at these RegEx commands:
+
+```{python}
+import re
+
+string = "Do not go gentle into that good night; Old age should burn and rave at close of day. Rage, rage against the dying of the light."
+
+match1=re.search(r"O.{5}e",string)
+match1.group()
+
+match2=re.findall(r"\s\w{4}\s",string)
+print(match2)
+
+match3=re.findall(r"\s\w+t[\.\s\;]",string)
+print(match3)
+```
+
+The first regex command tells python to pull out any instances where there are exactly 5 characters between any "o" and "e". The second asks to find all four letter words that are surrounded by spaces. Finally, the third asks to find all words that end with a "t". This is only a limited view of what RegEx can do, but as you may know, they are powerful for querying data sets to find exactly what you're looking for.  
+
+___  
+
+### DNA Sequence Analysis 
+
+![](/blog/2019-12-14-my-interest-in-python_files/dna.png)  
+
+Python is an extremely useful tool for understanding patterns (or changes in said patterns) in DNA sequences that may not be percievable to the naked eye. As you may know, DNA sequences can contain thousands of nucleotide bases, if not more, meaning it would take countless hours and some impressive detective skills to search through two sequences to find similar regions and patters. However, with Python, it only takes a few seconds!
+
+```{python}
+import numpy as np
+
+def match_fun(a,b):
+  if a==b:
+    score=1
+  else:
+    score=-1
+  return score
+  
+def needleman(s1,s2,gap_penalty=-1):
+  m=len(s1)
+  n=len(s2)
+  score=np.empty(shape=[n+1,m+1])
+  
+  for j in range(0, m + 1): score[0][j] = gap_penalty * j
+  for i in range(0, n + 1): score[i][0] = gap_penalty * i
+  
+  for i in range(1, n + 1):
+    for j in range(1, m + 1):
+      insert = score[i - 1][j] + gap_penalty
+      delete = score[i][j - 1] + gap_penalty
+      match = score [i - 1][j - 1] + match_fun(s1[j-1], s2[i-1])
+      score[i][j] = max(match,delete,insert)
+  return score
+  
+s1="ACGCTTACCG"
+s2="AGCCTACCCC"
+
+needleman(s1,s2)
+
+def get_alignment(s1,s2,mat,gap_penalty=-1):
+
+  j=len(s1)
+  i=len(s2)
+  
+  AlignA=""
+  AlignB=""
+  
+  while i > 0 or j > 0:
+    if i > 0 and j > 0 and mat[i,j]==mat[i-1][j-1]+match_fun(s1[j-1],s2[i-1]):
+      AlignA = s1[j-1] + AlignA
+      AlignB = s2[i-1] + AlignB
+      i-=1
+      j-=1
+    elif j > 0 and mat[i,j]==mat[i][j-1]+gap_penalty: 
+      AlignA = s1[j-1] + AlignA
+      AlignB = "-" + AlignB
+      j -= 1
+    else:
+      AlignA = "-" + AlignA
+      AlignB = s2[i-1]+AlignB
+      i -= 1
+  return AlignA, AlignB
+
+mat=needleman(s1,s2)
+get_alignment(s1,s2,mat)
+
+
+```
+
+With some basic code (and the Needleman-Wunsch/Smith-Walterman Algorithms), one could discover similar regions of two separate DNA sequences that reveal small mutations, inserts, deletions, etc., which could then be used to explain evolutionary changes between closely related organisms. Take a look at the code above for example. It revealed that there are two possible scenarios that our current DNA sequences (s1,s2) may have mutated from.
+
+My Python knowledge is still growing at the moment, but I hope to discover more ways that I can apply it in my studies as well as in my future career path.
+
+
+Once again, thank you for reading!
+
+Bucky

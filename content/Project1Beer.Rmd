@@ -1,0 +1,230 @@
+---
+title: "Project 1 - US Beers Final"
+author: "Brycen Buckingham - blb3757"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Dataset Choice**
+
+When searching for datasets to work with, I came across these two sets on kaggle.com. As a beer fan myself, I
+thought that these ones would be fun to work with! They feature beers and breweries from all across the United
+States. The author scrapped and compiled these from a website called CraftCans using python. He included the
+following variables:
+
+The name of the brewery and it’s location (state and city)
+
+The name of the beer each brewery makes, along with it’s categorical style
+
+The alcohol by volume content of each beer
+
+The bitterness of each beer, represented by the IBU (international bitterness unit)
+
+The ounces of each beer
+
+And finally, the unique brewery ID number assigned to the brewery, and to the beer so that we may later tell where
+they came from
+
+Throughout my analysis, I’m expecting there to be some sort of trend between ABV and IBU. Higher alcohol
+content beers tend to be IPAs or a little more bitter, so I guess this project will help me prove that!
+
+I was lucky enough to find that he had already made them tidy, so I didn’t have to wrangle the data much. Here are
+links to where I found the data and to a blog the author wrote about the data:
+
+https://www.kaggle.com/nickhould/craft-cans#beers.csv 
+
+http://www.jeannicholashould.com/python-web-scraping-tutorial-for-craft-beers.html
+
+
+```{r, echo=T, include=FALSE}
+#loading packages
+library(tidyverse)
+library(CARS)
+library(cluster)
+
+```
+
+**Joining the Data Sets**
+
+```{r cars}
+#data joining
+beers <- read.csv("C:/Users/bryce/beers.csv")
+breweries <- read.csv("C:/Users/bryce/breweries.csv")
+
+beers1 <- beers %>% select(everything(), -X)
+beerdata <- full_join(beers1,breweries, by=c("brewery_id"="X"))
+head(beerdata)
+
+beerdata1 <- beerdata %>% rename(beer='name.x', brewery='name.y') %>% select(everything(), -id, -brewery_id) %>% select(brewery, beer, style, ounces, abv, ibu, state, city)
+head(beerdata1)
+
+
+```
+
+#### Explanation on Data Joining
+
+Before joining the datasets, I dropped the “X” column from the beers data for two reasons. First, it was merely a
+placeholder/counter for the observation of each beer, so it seemed redundant. Second, the breweries data also
+had an “X” column in its midst, but its values corresponded to the unique identifier for each brewery. I did not want
+
+the datasets to erroneously join based on this column, so I thought it was best to remove it.
+When I finally joined the two data sets, I used a full join and set the common identifiers as “brewery_id” from the
+beers data, and “X” from the breweries data. These corresponded to the unique number assigned to each brewery.
+As you can imagine, there were many duplicates of the unique numbers in the beer data, but the maximum
+number the column reached was 557, which is exactly the number of breweries there were in the breweries data.
+In other words, this resulted in a perfect join with no information lost.
+
+After this, I renamed the “name” variables to correspond to the name of the beer and the name of the brewery,
+while also removing the id variables that were no longer needed. Then I rearranged the data in a way where the
+important categorical variables came first, followed by the important numerical data, and finally, the location of the
+breweries.
+
+**Data Examination**
+
+```{r}
+#data transformation and summary stats
+
+beerdata1 <- beerdata1 %>% mutate(alc.vol.oz = abv*ounces) %>% mutate(alc.cat = case_when(abv >=0.065 ~ "high", abv<0.065 & abv>=0.05 ~ "medium", abv<0.05 ~ "low"))
+texasbeers <- beerdata1 %>% filter(state == " TX") %>% select(-state)
+abv.state <- beerdata1 %>% group_by(state) %>% summarize(mean(abv, na.rm = T)) %>% rename(mean.abv="mean(abv, na.rm = T)") %>% arrange(desc(mean.abv))
+
+
+#general summaries
+beerdata1 %>% summarize(mean(abv, na.rm = T), n_distinct(style), n_distinct(city))
+head(abv.state)
+
+
+#ounces summary
+beerdata1 %>% summarise(mean(ounces, na.rm = T), median(ounces, na.rm = T), sd(ounces, na.rm = T), var(ounces, na.rm = T), min(ounces, na.rm = T), max(ounces, na.rm = T), n_distinct(ounces, na.rm = T))
+
+
+#abv summary
+beerdata1 %>% summarise(mean(abv, na.rm = T), median(abv, na.rm = T), sd(abv, na.rm = T), var(abv, na.rm = T), min(abv, na.rm = T), max(abv, na.rm = T), n_distinct(abv, na.rm = T))
+
+
+#ibu summary
+beerdata1 %>% summarise(mean(ibu, na.rm = T), median(ibu, na.rm = T), sd(ibu, na.rm = T), var(ibu, na.rm = T), min(ibu, na.rm = T), max(ibu, na.rm = T), n_distinct(ibu, na.rm = T))
+
+
+#summaries after grouping by categorical variables
+beerdata1 %>% group_by(state,city) %>% summarise(n_distinct(brewery), mean(abv, na.rm=T))
+
+beerdata1 %>% group_by(state, style) %>% summarise(mean(abv, na.rm = T)) %>% filter(style=="American IPA" | style=="Cider")
+
+texasbeers %>% group_by(city) %>% summarise(mean(abv, na.rm = T))
+
+
+```
+
+#### General Data Summary
+
+From the general summaries and statistics, we can see that there are 100 distinct styles of beers included in this
+dataset, spread across 384 distinct cities! The average alcohol content in a beer brewed in the US is 5.9%
+according to the data frame. That seems a little high, but we do have to consider that a lot of this data is pulled
+from microbreweries which tend to have higher alcohol outputs. The beers brewed in Texas seem to be right at the
+average with alcohol content, coming in at 5.9% as well! Now, if we look at the variables individually, we can see
+that the median beer size is 12 ounces, with a standard deviation of 2. That’s a pretty small spead, so we can
+assume that most beers brewed in the US sit around 12 ounces. The max beer size on this list, however, is 32
+ounces! Now that’s a hefty beer!
+
+Like I mentioned earlier, the average alcohol content for beers in the US is 5.9%. This variable has a standard
+deviation of 1.3%, and a maximum of 12.8%. So again, most beers on this list are around 5.9% abv, but there is
+some wiggle room around that number. Finally, the average bitterness of a beer brewed in the US has an IBU
+value of 42. This is somewhat vague, especially considering that the IBu scale runs from zero to infinity, but most
+beers will fall in the range of 5-100 IBUs, with IPAs being at the higher end of that scale. So an average rank of 42
+means that beers tend to have a little sourness to them, but not in an overwhelming manner.
+
+**Correlationional Examination**
+
+```{r}
+
+#Correlation Matrix
+corrbeerdata <- beerdata1[!is.na(beerdata1$abv),]
+corrbeerdata <- corrbeerdata[!is.na(corrbeerdata$ibu),]
+corrbeerdata <- corrbeerdata[!is.na(corrbeerdata$ounces),]
+corrbeerdata <- corrbeerdata[!is.na(corrbeerdata$state),]
+corrbeerdata %>% select(abv, ibu, ounces) %>% cor() %>% round(2)
+
+```
+
+#### Correlation Summary
+
+The correlation matrix reveals that there is a slight correlation between alcohol content and bitterness of the beer.
+The correlation is 0.67, so we could say that as the beer has more alcohol in it, it’s likely to be more sour, but by no
+means is that causality.
+
+**Visualizations**
+
+```{r}
+
+#visualizations
+
+beerdata1 %>% ggplot(aes(x = state, fill=alc.cat)) + geom_bar() + coord_flip() + theme(axis.text.y = element_text(size=6)) + ggtitle("Number of Unique Beers Produced in Each State") + ylab("Number of Beers") + xlab("State") + labs(fill = "Alcohol Content Category")
+
+beerdata1 %>% ggplot(aes(x = abv, y = ibu, color = ounces)) + geom_point(size=0.75) + geom_smooth(method = "lm", color = 'red') + ggtitle("Relation Between Alcohol Percentage and Bitterness") + ylab('International Bitterness Unit') + xlab('Alcohol By Volume (Perecent') + theme(axis.text.y = element_text(size=3)) + scale_color_gradient(low = 'blue', high='yellow')
+
+```
+
+#### Number of Unique Beers Produced in Each State
+
+The first plot shows a couple different things. First, it shows that plenty of beers are produced across the nation, in
+that all fifty states are represented here. Second, this plot shows how many unique beers are produced by the
+breweries in those states. Colorado and California produce the highest number of unique beers by far, with North
+Dakota an West Virginia producing the least! Finally, this plot also shows what kind of beers a state produces in
+terms of alcohol content. For beers with more than 6.5%, they are labeled as “high alcohol content”, for beers
+between 6.5% and 5% they are labeled as “medium” content, and for beers below 5% they are labeled as “low”
+content. Most states produce beers with medium alcohol content, but it seems like the more unique beers a state
+produces, more of those contain high alcohol (again, take Colorado and California for example).
+
+#### Relation Between Alcohol Percentage and Bitterness
+
+The second plot shows the relationship between alcohol content of a beer and its bitterness. As I discussed earlier, there
+is a correlation of 0.67 between the two in this data set. I have also mapped on the size of each beer by using
+color, but it does not seem like there is an apparent relationship between size and the other variables.
+
+**Cluster Analysis**
+
+```{r}
+
+#Cluster Analysis
+
+#ABV v. IBU
+clust_dat <- corrbeerdata %>% select(abv,ibu)
+
+wss<-vector()
+for(i in 1:10){
+temp<-clust_dat%>%dplyr::select(abv,ibu)%>%kmeans(.,i)
+wss[i]<-temp$tot.withinss
+}
+ggplot()+geom_point(aes(x=1:10,y=wss))+geom_path(aes(x=1:10,y=wss))+
+ xlab("clusters")+scale_x_continuous(breaks=1:10)
+
+kmeans1<-clust_dat%>%kmeans(3)
+kmeans1
+
+kmeansclust<-clust_dat%>%mutate(cluster=as.factor(kmeans1$cluster))
+kmeansclust%>%ggplot(aes(abv,ibu,color=cluster))+geom_point()
+
+```
+
+#### Cluster Analysis Summary
+
+I ran a cluster analysis between ABV and IBU to further explore the relationship between the two. I wanted to see
+if the style of the beer was related to that relationship, or if there possibly was something related to the state it was
+produced in.
+
+First, I created a new data frame called “clust_dat” where I selected the variables I needed from a previous data
+frame called “corrbeerdata”. This previous data frame was used to create a correlation matrix between my numeric
+variables and already had observations with “NA” removed from it. I then created a for loop to evaluate how many
+clusters I should include. From the resulting ggplot, I determined that 3 clusters would be the best to use because
+that estimation had a relatively low “within sum of squares” value, and it was also still significantly different from
+the WSS value for 4 clusters (i.e. the plot was not already flat at that value).
+
+Then, I ran my data through a kmeans using three clusters, and created a plot to visualize it. From looking at the
+plot, I’m not sure if there really are any clusters to apply to the plot. The segmentation between the cluster groups
+is a hard line, and it doesn’t seem like there are any natural clusters that could form from the data. In that sense,
+I’m not sure if it would be appropriate to try to analyze why the clusters formed where they did, other than it
+segmented the data into thirds based off IBU.

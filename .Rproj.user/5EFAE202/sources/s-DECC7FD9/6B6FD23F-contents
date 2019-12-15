@@ -1,0 +1,22 @@
+{{ partial "head" . }}
+  <body>
+    <div id="wrap">
+      {{ partial "header" . }}
+      <section id="about">
+        <div class="container">
+        <div class="avatar">
+          <img class="img-circle" src="{{ .Site.BaseURL }}img/{{ .Site.Params.avatar }}" alt="Responsive image">
+        </div>
+        <h3>My name is <strong>{{ .Site.Params.author }}</strong>, and I'm a Senior at the University of Texas.</h3>
+        <h3>A Biology Major with goals of becoming a Hospital Administrator.</h3>
+        <h3>Have a look at some of my working <a href="{{ .Site.BaseURL }}projects/"> projects</a>.</h3>
+        <h3>Here is a current copy of my <a href="/Resume.pdf"> resume</a>.</h3>
+        <h3>Feel free to contact me through my <a href="mailto:{{ .Site.Params.Social.Email }}">email</a>.</h3>
+        <h3>Thank you for visiting my site!</h3>
+        {{ partial "social.html" . }}
+        </div>
+      </section>
+    </div>
+    {{ partial "footer" . }}
+  </body>
+</html>

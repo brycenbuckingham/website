@@ -1,0 +1,336 @@
+---
+title: "Project 2 - Body Fat"
+output: html_document
+---
+## Brycen Buckingham - blb3757
+#### Project 2: Exploration of Body Fat Measures
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(interactions)
+library(sandwich)
+library(lmtest)
+library(MASS)
+library(plotROC)
+library(glmnet)
+```
+
+The dataset that I chose comes from the Journal of Statistics Education, and it explores many variables that one might use to predict an individual's body fat percentage as well as the distribution of said fat around the body.The data set observed 252 males of varying height, weight, and age to gather this data. There are 17 naitive variables that the researchers included, which are:
+
+- Unique Number Per Individual
+- Body Fat Percentage
+- Density (gm/cm^3)
+- Age (years)
+- Weight (pounds)
+- Height (inches)
+- Body Mass Index (standardization of weight against height: [703 x weight (lbs)]/[height(in)]^2)
+- Neck, Chest, ... Wrist (10 places on the body where the circumference was taken in centimeters)
+
+
+I am excited to see how these variables interact with one another, and if any circumference measurements are good predictors of one's Body Fat Percentage or BMI.
+
+```{r cars}
+bodyfat <- read.csv("bodyfat.csv")
+
+bodyfat <- bodyfat %>% mutate(BMI_CAT = case_when(BMI<18.5 ~ "1", 18.5<=BMI & BMI<25 ~ "2", 25<=BMI & BMI<30 ~ "3", 30<=BMI & BMI<35 ~ "4", 35<BMI ~ "5")) %>% mutate(OBESE = case_when(BMI_CAT=='5' | BMI_CAT=="4" ~ "1", BMI_CAT=='1' | BMI_CAT=='2' | BMI_CAT=='3' ~ "0")) 
+
+
+```
+
+In interest of having a couple more categorical variables, I decided to add two variables; BMI_CAT (BMI Category/Type), and OBESE. The BMI Category variable takes an individual's BMI and categorizes into one of five buckets (Underweight [1], Normal [2], Overweight [3], Obese [4], Extremely Obese [5]). To see what the parameters are for each bucket, please refer below this paragraph. The OBESE variable is binary and states whether an individual is obese (categories 4 and 5) or at a more reasonable BMI (categories 1, 2, and 3). If the individual is obese, the value is 1, and if they are not, the value is 0.
+
+1. Underweight: BMI < 18.5
+1. Normal: 18.5 <= BMI < 25
+1. Overweight: 25 <= BMI < 30
+1. Obese: 30 <= BMI < 35
+1. Extremely Obese: BMI >= 35
+
+### 1. MANOVA Test
+
+```{r}
+#Eyeball major variables to make sure there aren't any major violations of assumptions
+ggplot(bodyfat, aes(x = BODYFAT, y = BMI)) + geom_point(alpha = 0.5)
+ggplot(bodyfat, aes(x = BODYFAT, y = BMI)) + geom_point(alpha = 0.5) + geom_density_2d() + facet_wrap(~BMI_CAT)
+
+#There are 3 individuals who are extremely obese in this data set, and 1 who is underweight, so it may be necessary to remove them from the dataset for proper analysis, as they are outliers
+
+bodyfat2 <- subset(bodyfat, !BMI_CAT=='1' & !BMI_CAT=='5')
+
+bfmanova <- manova(cbind(BODYFAT,BMI)~ BMI_CAT, data = bodyfat2)
+summary(bfmanova)
+summary.aov(bfmanova)
+bodyfat2%>%group_by(BMI_CAT)%>%summarize(mean(BODYFAT),mean(BMI))
+pairwise.t.test(bodyfat2$BODYFAT, bodyfat2$BMI_CAT, p.adj='none')
+pairwise.t.test(bodyfat2$BMI, bodyfat2$BMI_CAT, p.adj='none')
+
+# 1 MANOVA, 2 ANOVA, 6 t-tests -> 9 tests total
+0.05/9
+
+```
+
+(Because 9 tests were performed in this analysis, the Bonferroni method for correcting for type 1 errors will be used, with the p-value threshold being 0.0056).
+
+A one-way multivariate analysis of variance was conducted to determine the effect of the BMI category on the two dependent variables, body fat percentage and Body Mass Index.
+
+Before running the MANOVA test, bivariate density plots were created for each BMI Category. From these plots it was clear that there were 4 individuals (1 underweight individual, and 3 extremely obese individuals) who violated the assumptions for performing the analysis. They were the only observations in their respective BMI categories, which means that there were not enough observations in either of their groups to include them in our statistical analysis. So it was necessary to remove them from the dataset/analysis before continuing (this leaves us with BMI categories 2, 3, and 4). 
+
+According to this analysis, there are significant differences between the three BMI categories based on the two dependent variables:
+- Pillai trace = 0.79, psuedo F = 81.28, p < 2.2e-16
+
+Due to this significance, a univariate analyses of variance was then performed on each dependent variable. The ANOVAs for both dependents variables (body fat percentage and BMI) were significant, with their p-values being smaller than 2.2e-16.
+
+Finally, a post hoc analysis was performed (by way of pairwise t-tests) to see how each dependent variable differed between the groups. From this analysis, all 3 groups had significantly different body fat percentage and BMI values:
+
+**Body Fat Percentage**
+
+- Group 2:Group 3, p<2e-16
+- Group 3:Group 4, p<3.7e-06
+- Group 2:Group 4, p<2e-16
+
+**BMI Values**
+
+- Group 2:Group 3, p<2e-16
+- Group 3:Group 4, p<2e-16
+- Group 2:Group 4, p<2e-16
+
+As a quick side-note, the MANOVA test I performed analyses a dependent variable against an independent varialbe that it is largely similar to (BMI and BMI Categories). In other words, the BMI Categories themselves are contructed from a range of BMI values, so it may seem redundant or obvious that each category will have a significantly different BMI value from the others. However, this is still an important analysis to make because it tells us if the ranges for each category are too large, or too small. If the ranges were smaller, there would be more categories for BMI values which may lead to non-significant differences between the groups. If the ranges were larger, there would be fewer categories which may lead to over generalization and a loss of other important relationships each category has with other variables in the dataset. But, because the BMI values were significantly different across all of the categories, we can deduce that they are perfectly spaced out and will allow us to discover other differences they may have with one another.
+
+
+### 2. Randomization Test
+
+```{r}
+#Real Values and Correlation Test
+real.bf <- data.frame(T.ABDOMEN=bodyfat2$ABDOMEN, T.THIGH=bodyfat2$THIGH)
+
+cor.test(real.bf$T.ABDOMEN, real.bf$T.THIGH)
+
+
+#Randomized Values for thigh, and Correlation Test
+perm1 <-vector()
+
+for(i in 1:5000){
+  scrambled.bf <- data.frame(T.ABDOMEN=bodyfat2$ABDOMEN, R.THIGH=sample(bodyfat2$THIGH))
+  perm1[i] <- cor(scrambled.bf$T.ABDOMEN, scrambled.bf$R.THIGH)
+}
+
+
+#Probability of Real Correlation Coefficient
+mean(perm1>0.7273783)*2
+
+
+#Null Distribution
+{hist(perm1, main="Null Distribution of Permutation", xlab = "Correlation Coefficient Value", xlim = c(-.8,.8)); abline(v = 0.7273783, col='blue')}
+
+```
+
+- Null Hypothesis: There is no real correlation between the circumference of an individual's abdomen and the circumference of their thigh.
+- Alternate Hypothesis: There is a correlation between the circumerence of an individual's abdomen and the circumference of their thigh.
+
+After calculating the true correlation coefficient between the circumference of an individual's abdomen and their thigh, I compared it to a distribution of 5000 correlation coefficients that were generated from 5000 random permutations of the original data. The true correlation, 0.73, falls far outside the bounds of the null distribution of coefficients, denoting that it's very unlikely that a correlation like this would form due to chance. To further prove this, the p-value for this situation is 0. 
+
+### 3. Linear Regression Model
+
+```{r}
+
+bodyfat3 <- bodyfat2 %>% mutate(c_NECK=c(scale(NECK)), c_ANKLE=c(scale(ANKLE)))
+
+
+#Regression Model
+bf.fit1 <- lm(BODYFAT~c_NECK*c_ANKLE, data=bodyfat3)
+summary(bf.fit1)
+
+
+#Interaction Plot
+interact_plot(model = bf.fit1, pred = 'c_NECK', modx = 'c_ANKLE', plot.points = TRUE)
+
+#Check for Assumptions
+resids <- bf.fit1$residuals
+fitvals <- bf.fit1$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red')
+ggplot()+geom_histogram(aes(resids))
+ggplot()+geom_qq(aes(sample=resids))
+
+#Robust Standard Errors
+summary(bf.fit1)$coef[,1:2]
+coeftest(bf.fit1, vcov = vcovHC(bf.fit1))[,1:2]
+
+```
+
+This regression model predicts that someone of average neck and ankle circumference (coefficients held at constant 0) will have a body fat percentage of 19.1% on average. For every 1cm increase in neck circumferance above the mean, body fat percentage is expected to increase by 3.4%. For every 1cm increase of ankle circumfereance above the mean, body fat is expected to increase by 0.2%. Additionally, as the circumference of one's neck gets larger, it decreases the effect one's ankle circumference has on body fat percentage by 0.87 (and vice versa).
+
+By plotting the residuals across various a scatter plot, a histogram, and a qqplot, we can confirm that the assumptions of linearity, normality, and homoskedasticity were all met.
+
+After rerunning the regression with robust standard errors, there were not many significant differences. The standard error for the ankle circumference coefficient did raise by 0.06, which may show that it has the least important effect on body fat percentage compared to the other coefficients.
+
+Overall, this model explains 23.1% of the total variation in body fat.
+
+
+### 4. Bootstrapped Standard Errors
+
+```{r}
+boots<-replicate(5000, {
+ boot_dat<-bodyfat3[sample(nrow(bodyfat3),replace=TRUE),]
+ boot.bf.fit<-lm(BODYFAT~c_NECK*c_ANKLE, data=boot_dat)
+ coef(boot.bf.fit)
+})
+
+boots%>%t%>%as.data.frame%>%summarize_all(sd)
+
+```
+
+After rerunning the linear model with bootstrapped data, there still does not seem to be much change in the standard errors. However, this SE analysis had a much smaller effect on the ankle coeffecient than the robust SE correction, as it only changed by 0.03 this time. 
+
+
+### 5. Logistic Regression Model
+
+```{r}
+bodyfat2$OBESE <- as.numeric(bodyfat2$OBESE)
+
+logit.bf.fit <- glm(OBESE~WEIGHT+ABDOMEN, data = bodyfat2, family = "binomial")
+coeftest(logit.bf.fit)
+exp(coef(logit.bf.fit))
+
+
+#Confusion Matrix
+bodyfat2$prob <- predict(logit.bf.fit, type = 'response')
+bodyfat2$predicted <- ifelse(bodyfat2$prob>0.5, '1', '0')
+table(truth=bodyfat2$OBESE, prediction=bodyfat2$predicted)%>%addmargins
+
+#Accuracy, Sensitifity, Specificity, Precision (from top to bottom)
+(223+13)/247
+13/21
+223/226
+13/16
+
+#Density Plot of Log-Odds
+bodyfat4 <- bodyfat2
+bodyfat4$OBESE <- as.factor(bodyfat4$OBESE)
+bodyfat4$logit<-predict(logit.bf.fit,type="link")
+
+bodyfat4%>%ggplot()+geom_density(aes(logit,color=OBESE,fill=OBESE), alpha=.4)+
+  theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab("predictor (logit)")
+
+#ROC curve
+bf.ROC <- ggplot(bodyfat2)+geom_roc(aes(d=OBESE,m=prob), n.cuts = 0)
+bf.ROC
+calc_auc(bf.ROC)
+
+#10 fold Cross Validation
+class_diag<-function(probs,truth){
+ tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+ acc=sum(diag(tab))/sum(tab)
+ sens=tab[2,2]/colSums(tab)[2]
+ spec=tab[1,1]/colSums(tab)[1]
+ ppv=tab[2,2]/rowSums(tab)[2]
+ if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+ #CALCULATE EXACT AUC
+ ord<-order(probs, decreasing=TRUE)
+ probs <- probs[ord]; truth <- truth[ord]
+ TPR=cumsum(truth)/max(1,sum(truth))
+ FPR=cumsum(!truth)/max(1,sum(!truth))
+ dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+ TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+ n <- length(TPR)
+ auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+ data.frame(acc,sens,spec,ppv,auc)
+} 
+
+set.seed(1234)
+k=5
+
+CV.bf.data <- bodyfat4[sample(nrow(bodyfat4)),]
+folds <- cut(seq(1:nrow(bodyfat4)),breaks = k, labels = F)
+
+bf.diags <- NULL
+for(i in 1:k){
+  
+  bf.train<-CV.bf.data[folds!=i,]
+  bf.test<-CV.bf.data[folds==i,]
+  bf.truth<-bf.test$OBESE
+  
+  CV.bf.fit <- glm(OBESE~WEIGHT+ABDOMEN,data = bf.train, family = "binomial")
+  bf.probs <- predict(CV.bf.fit, newdata = bf.test, type = 'response')
+  
+  bf.diags <- rbind(bf.diags,class_diag(bf.probs,bf.truth))
+  
+}
+
+apply(bf.diags,2,mean)
+
+```
+The logistic regression I ran explores how obesity may be predicted by an individual's body weight, and the circumference of their abdomen. Since the logistic regression returns the variable coefficients as log-odds, it will be necessary to exponentiate them first. After doing so, we can see that for every additional pound an individual weighs, they will have 1.03 times the odds of becoming obese (while controlling for changes in abdomen circumference). For further clarity, if an individual weighed 150 pounds, they will have 1.03^150 = *84.25* times the odds of becoming obese compared to someone who theoretically weighs 0 pounds. Additionally, everytime an individual's abdomen increases in circumference by 1 centimeter, they will have 1.39 times the odds of becoming obese.
+
+This model has certain strenghts and weaknesses when it comes to the confusion matrix:
+
+**Strengths**
+
+- Accuracy (0.95): The model was able to correctly predict if an individual was obese or normal 95% of the time for the entire data set.
+- Specificity (0.98): Out of the 226 people who were truly normal (not obese), the model correctly predicted that 223 of them would normal, but incorrectly predicted that 3 would be obese (predicted true normal BMI 98% of the time).
+
+**Weaknesses**
+
+- Sensitivity (0.61): Out of the 21 people who were actually obese, the model predicted that only 13 of them would be obese (predicted true obesity 61% of the time)
+- Precision (0.81): Out of the 16 people that the model predicted to be obese, it correctly predicted obesity 13 times (81% of the model's predictions for obesity were correct).
+
+It's important to note that sensitivity and precision may not be good evaluations of the model because they use a very small number of observations and predictions to calculate their percentages. A small change in the observations or predictions could drastically change how sensisive or precise the model is. In order to bolster these evaluations, the data set will need to include more observations of obese individuals.
+
+I then created an ROC curve and calculated the area under it. This area turned out to be 0.97. This means that there is a 97% chance that a randomly selected individual with obesity has a higher prediction of being obese than a randomly selected person who is not obese.
+
+Finally, I performed a 5-fold Cross Validation (I could not do 10 as it was not reporting values for sensitivity or precision) to see if my model was overfitting the data. It reported values for accuracy (0.95), sensitivity(0.61), specificity(0.98), precision(0.80), and AUC (0.97) that were all very similar to the original model. This means that the original model was not overfitting the data and is still an accurate predictor of obesity based on weight and abdomen circumference.
+
+### 6. LASSO Regression
+
+```{r}
+
+bodyfat5 <- bodyfat2%>%dplyr::select(-prob, -predicted)
+bodyfat5$OBESE <- as.numeric(bodyfat5$OBESE)
+
+
+#Regular Regression
+bodyfat6<-bodyfat5%>%dplyr::select(-IDNO, -BMI_CAT)
+
+reg.fit<-lm(WEIGHT~.,data=bodyfat6)
+reg.yhat<-predict(reg.fit)
+
+mean((bodyfat6$WEIGHT-reg.yhat)^2)
+
+
+#LASSO Rgression
+lass.y<-as.matrix(bodyfat5$WEIGHT)
+lass.x<-bodyfat5%>%dplyr::select(-WEIGHT, -IDNO, -BMI_CAT)%>%mutate_all(scale)%>%as.matrix
+
+lass.cv<-cv.glmnet(lass.x,lass.y) 
+
+bf.lasso1<-glmnet(lass.x,lass.y,lambda=lass.cv$lambda.1se)
+coef(bf.lasso1)
+
+set.seed(1234)
+k=10 
+lass.data<-bodyfat5[sample(nrow(bodyfat5)),] 
+lass.folds<-cut(seq(1:nrow(bodyfat5)),breaks=k,labels=F)
+lass.diags<-NULL
+for(i in 1:k){
+ lass.train<-lass.data[lass.folds!=i,]
+ lass.test<-lass.data[lass.folds==i,]
+ lass.fit<-lm(WEIGHT~HEIGHT+BMI+NECK+CHEST+HIP+THIGH+KNEE+BICEPS,data=lass.train)
+ lass.yhat<-predict(lass.fit,newdata=lass.test)
+ lass.diags<-mean((lass.test$WEIGHT-lass.yhat)^2)
+}
+
+mean(lass.diags)
+
+```
+
+Before running this regression, I removed the categorical variables INDO and BMI_CAT because it did not make sense to convert them to numeric values.
+
+I then ran a regular linear regression on the modified data set to find its mean square error (2.44). 
+
+For the LASSO regression, I decided to predict weight from the rest of the variables. Choosing a lambda of 1se, the variables that were significant/retained are height, BMI, neck, chest, hip, thigh, knee, and biceps. I then performed a 10-fold Cross Validation using these variables to predict an individual's weight. This resulted with a mean squared error of 1.16. This is smaller than the regular linear regression's MSE of 2.44. This denotes that the simplified LASSO regression is a slightly better fit for the model because it reduces the overfitting of the data.
+
+
+
+
+
+
+

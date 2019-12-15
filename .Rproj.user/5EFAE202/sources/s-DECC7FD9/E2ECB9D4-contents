@@ -1,0 +1,25 @@
+---
+title: My Interest in Python
+author: Brycen Buckingham
+date: '2019-12-14'
+slug: my-interest-in-python
+categories: []
+tags: []
+description: ''
+---
+Hey Y'all,
+
+Thanks for tuning-in to another blog post! I just wanted to take some time to express my thoughts and interest in working with Python.
+
+This semester (Fall 2019) is actually the first time that I've used or worked with Python. Previously, I've used RStudio and R to explore statistical relationships within data sets, but I'm now dipping my toes into something that's new to me. So far, I've really fallen in love with Regular Expression Applications and analyzing DNA sequences with the Needleman-Wunsch and Smith-Walterman Algorithms.
+
+Regular Expressions are simple yet elegant. In a string or a list, if you need to find sections of text that may be similar but also unique, RegEx commands can help you with that! It's almost like drafting the solution to a puzzle, or telling the code to find a red and white stripped sweater in a Where's Waldo book. This is only a limited view of what RegEx can do, but as you may know, they are powerful for querying data sets to find exactly what you're looking for.
+
+With DNA sequence analysis, Python is an extremely useful tool for understanding patterns (or changes in said patterns) that may not be percievable to the naked eye. As you may know, DNA sequences can contain thousands of nucleotide bases, if not more, meaning it would take countless hours and some impressive detective skills to search through two sequences to find similar regions and patters. However, with Python, it only takes a few seconds! With some basic code (and the Needleman-Wunsch/Smith-Walterman Algorithms), one could discover similar regions of two separate DNA sequences that reveal small mutations, inserts, deletions, etc., which could then be used to explain evolutionary changes between closely related organisms.
+
+My Python knowledge is still growing at the moment, but I hope to discover more ways that I can apply it in my studies as well as in my future career path.
+
+
+Once again, thank you for reading!
+
+Bucky

@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576435813764.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "C3E9CBDB",
+    "lastKnownWriteTime" : 1576382132,
+    "last_content_update" : 1576382132,
+    "path" : "C:/Users/bryce/Desktop/website2/content/blog/2019-12-14-welcome-to-my-website.Rmd",
+    "project_path" : "content/blog/2019-12-14-welcome-to-my-website.Rmd",
+    "properties" : {
+        "cursorPosition" : "31,0",
+        "scrollLine" : "14"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

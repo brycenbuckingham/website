@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576356543653.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "B3076756",
+    "lastKnownWriteTime" : 7957695011165139568,
+    "last_content_update" : 1576356543653,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "7FAC3E7D",
+        "caption" : "bodyfat",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=bodyfat&cache_key=7FAC3E7D",
+        "displayedObservations" : 251,
+        "environment" : "",
+        "expression" : "bodyfat",
+        "object" : "bodyfat",
+        "preview" : 0,
+        "totalObservations" : 251,
+        "variables" : 17
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

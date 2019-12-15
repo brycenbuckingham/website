@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Brycen Buckingham" />
+    <meta name="description" content="An Exposition of My Current and Previous Data Projects">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>My Interest in Python</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/blog/my-interest-in-python/">My Interest in Python</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          December 14, 2019
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p>Hey Y’all,</p>
+<p>Thanks for tuning-in to another blog post! I just wanted to take some time to express my thoughts and interest in working with Python.</p>
+<p>This semester (Fall 2019) is actually the first time that I’ve used or worked with Python. Previously, I’ve used RStudio and R to explore statistical relationships within data sets, but I’m now dipping my toes into something that’s new to me. So far, I’ve really fallen in love with Regular Expression Applications and analyzing DNA sequences with the Needleman-Wunsch and Smith-Walterman Algorithms.</p>
+<hr />
+<div id="regex" class="section level3">
+<h3>RegEx</h3>
+<p><img src="/blog/2019-12-14-my-interest-in-python_files/regex.png" /></p>
+<p>Regular Expressions are simple yet elegant. In a string or a list, if you need to find sections of text that may be similar but also unique, RegEx commands can help you with that! It’s almost like drafting the solution to a puzzle, or telling the code to find a red and white stripped sweater in a Where’s Waldo book.For example, take a look at these RegEx commands:</p>
+<pre class="python"><code>import re
+
+string = &quot;Do not go gentle into that good night; Old age should burn and rave at close of day. Rage, rage against the dying of the light.&quot;
+
+match1=re.search(r&quot;O.{5}e&quot;,string)
+match1.group()</code></pre>
+<pre><code>## &#39;Old age&#39;</code></pre>
+<pre class="python"><code>match2=re.findall(r&quot;\s\w{4}\s&quot;,string)
+print(match2)</code></pre>
+<pre><code>## [&#39; into &#39;, &#39; good &#39;, &#39; burn &#39;, &#39; rave &#39;, &#39; rage &#39;]</code></pre>
+<pre class="python"><code>match3=re.findall(r&quot;\s\w+t[\.\s\;]&quot;,string)
+print(match3)</code></pre>
+<pre><code>## [&#39; not &#39;, &#39; that &#39;, &#39; night;&#39;, &#39; at &#39;, &#39; against &#39;, &#39; light.&#39;]</code></pre>
+<p>The first regex command tells python to pull out any instances where there are exactly 5 characters between any “o” and “e”. The second asks to find all four letter words that are surrounded by spaces. Finally, the third asks to find all words that end with a “t”. This is only a limited view of what RegEx can do, but as you may know, they are powerful for querying data sets to find exactly what you’re looking for.</p>
+<hr />
+</div>
+<div id="dna-sequence-analysis" class="section level3">
+<h3>DNA Sequence Analysis</h3>
+<p><img src="/blog/2019-12-14-my-interest-in-python_files/dna.png" /></p>
+<p>Python is an extremely useful tool for understanding patterns (or changes in said patterns) in DNA sequences that may not be percievable to the naked eye. As you may know, DNA sequences can contain thousands of nucleotide bases, if not more, meaning it would take countless hours and some impressive detective skills to search through two sequences to find similar regions and patters. However, with Python, it only takes a few seconds!</p>
+<pre class="python"><code>import numpy as np
+
+def match_fun(a,b):
+  if a==b:
+    score=1
+  else:
+    score=-1
+  return score
+  
+def needleman(s1,s2,gap_penalty=-1):
+  m=len(s1)
+  n=len(s2)
+  score=np.empty(shape=[n+1,m+1])
+  
+  for j in range(0, m + 1): score[0][j] = gap_penalty * j
+  for i in range(0, n + 1): score[i][0] = gap_penalty * i
+  
+  for i in range(1, n + 1):
+    for j in range(1, m + 1):
+      insert = score[i - 1][j] + gap_penalty
+      delete = score[i][j - 1] + gap_penalty
+      match = score [i - 1][j - 1] + match_fun(s1[j-1], s2[i-1])
+      score[i][j] = max(match,delete,insert)
+  return score
+  
+s1=&quot;ACGCTTACCG&quot;
+s2=&quot;AGCCTACCCC&quot;
+
+needleman(s1,s2)</code></pre>
+<pre><code>## array([[  0.,  -1.,  -2.,  -3.,  -4.,  -5.,  -6.,  -7.,  -8.,  -9., -10.],
+##        [ -1.,   1.,   0.,  -1.,  -2.,  -3.,  -4.,  -5.,  -6.,  -7.,  -8.],
+##        [ -2.,   0.,   0.,   1.,   0.,  -1.,  -2.,  -3.,  -4.,  -5.,  -6.],
+##        [ -3.,  -1.,   1.,   0.,   2.,   1.,   0.,  -1.,  -2.,  -3.,  -4.],
+##        [ -4.,  -2.,   0.,   0.,   1.,   1.,   0.,  -1.,   0.,  -1.,  -2.],
+##        [ -5.,  -3.,  -1.,  -1.,   0.,   2.,   2.,   1.,   0.,  -1.,  -2.],
+##        [ -6.,  -4.,  -2.,  -2.,  -1.,   1.,   1.,   3.,   2.,   1.,   0.],
+##        [ -7.,  -5.,  -3.,  -3.,  -1.,   0.,   0.,   2.,   4.,   3.,   2.],
+##        [ -8.,  -6.,  -4.,  -4.,  -2.,  -1.,  -1.,   1.,   3.,   5.,   4.],
+##        [ -9.,  -7.,  -5.,  -5.,  -3.,  -2.,  -2.,   0.,   2.,   4.,   4.],
+##        [-10.,  -8.,  -6.,  -6.,  -4.,  -3.,  -3.,  -1.,   1.,   3.,   3.]])</code></pre>
+<pre class="python"><code>def get_alignment(s1,s2,mat,gap_penalty=-1):
+
+  j=len(s1)
+  i=len(s2)
+  
+  AlignA=&quot;&quot;
+  AlignB=&quot;&quot;
+  
+  while i &gt; 0 or j &gt; 0:
+    if i &gt; 0 and j &gt; 0 and mat[i,j]==mat[i-1][j-1]+match_fun(s1[j-1],s2[i-1]):
+      AlignA = s1[j-1] + AlignA
+      AlignB = s2[i-1] + AlignB
+      i-=1
+      j-=1
+    elif j &gt; 0 and mat[i,j]==mat[i][j-1]+gap_penalty: 
+      AlignA = s1[j-1] + AlignA
+      AlignB = &quot;-&quot; + AlignB
+      j -= 1
+    else:
+      AlignA = &quot;-&quot; + AlignA
+      AlignB = s2[i-1]+AlignB
+      i -= 1
+  return AlignA, AlignB
+
+mat=needleman(s1,s2)
+get_alignment(s1,s2,mat)
+</code></pre>
+<pre><code>## (&#39;ACGCTTA-CCG&#39;, &#39;A-GCCTACCCC&#39;)</code></pre>
+<p>With some basic code (and the Needleman-Wunsch/Smith-Walterman Algorithms), one could discover similar regions of two separate DNA sequences that reveal small mutations, inserts, deletions, etc., which could then be used to explain evolutionary changes between closely related organisms. Take a look at the code above for example. It revealed that there are two possible scenarios that our current DNA sequences (s1,s2) may have mutated from.</p>
+<p>My Python knowledge is still growing at the moment, but I hope to discover more ways that I can apply it in my studies as well as in my future career path.</p>
+<p>Once again, thank you for reading!</p>
+<p>Bucky</p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
